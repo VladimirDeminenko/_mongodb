@@ -14,7 +14,7 @@
  limitations under the License.
  */
 
-
+const TIMEOUT = 2;
 var MongoClient = require('mongodb').MongoClient,
     assert = require('assert');
 
@@ -29,7 +29,7 @@ function ItemDAO(database) {
         "use strict";
 
         /*
-         * TODO-lab1A
+         * _TODO-lab1A
          *
          * LAB #1A: Implement the getCategories() method.
          *
@@ -52,12 +52,13 @@ function ItemDAO(database) {
          * to the callback.
          *
          */
-
         var categories = [];
         var category = {
             _id: "All",
             num: 0
         };
+
+        categories.push(category);
 
         var group = {
             $group: {
@@ -76,29 +77,25 @@ function ItemDAO(database) {
 
         var pipeline = [group, sort];
 
-        categories.push(category);
         self.db.collection('item').aggregate(pipeline).forEach(
             function (doc) {
-                // console.log('doc:', doc);
                 categories.push(doc);
                 category.num += doc.num;
-                // console.log('\nXXX:', categories);
             }
         );
 
         setTimeout(function () {
-            console.log('\nAfter pause:', categories);
-            console.log('\mcategories:', categories);
             callback(categories);
-        }, 1000);
+        }, TIMEOUT);
 
 
-        // TODO-lab1A Replace all code above (in this method).
+        // _TODO-lab1A Replace all code above (in this method).
 
-        // TODO Include the following line in the appropriate
+        // _TODO Include the following line in the appropriate
         // place within your code to pass the categories array to the
         // callback.
 
+        // callback(categories);
     }
 
 
