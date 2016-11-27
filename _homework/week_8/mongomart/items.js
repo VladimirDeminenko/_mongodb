@@ -53,12 +53,11 @@ function ItemDAO(database) {
          *
          */
         var categories = [];
+
         var category = {
             _id: "All",
             num: 0
         };
-
-        categories.push(category);
 
         var group = {
             $group: {
@@ -76,6 +75,8 @@ function ItemDAO(database) {
         };
 
         var pipeline = [group, sort];
+
+        categories.push(category);
 
         self.db.collection('item').aggregate(pipeline).forEach(
             function (doc) {
@@ -124,25 +125,57 @@ function ItemDAO(database) {
          *
          */
 
-        var pageItem = this.createDummyItem();
+        var match = {
+            $match: {
+                category: category
+            }
+        };
+
+        var sort = {
+            $sort: {
+                _id: 1
+            }
+        };
+
+        var skip = {
+            $skip: page * itemsPerPage
+        };
+
+        var limit = {
+            $limit: itemsPerPage
+        };
+
+
         var pageItems = [];
-        for (var i = 0; i < 5; i++) {
-            pageItems.push(pageItem);
+        var pipeline = [];
+
+        if (category != "All") {
+            pipeline.push(match);
         }
 
-        // TODO-lab1B Replace all code above (in this method).
+        pipeline.push(sort, skip, limit);
 
-        // TODO Include the following line in the appropriate
+        self.db.collection('item').aggregate(pipeline).forEach(
+            function (doc) {
+                pageItems.push(doc);
+            }
+        );
+
+        setTimeout(function () {
+            callback(pageItems);
+        }, TIMEOUT);
+
+        // _TODO-lab1B Replace all code above (in this method).
+
+        // _TODO Include the following line in the appropriate
         // place within your code to pass the items for the selected page
         // to the callback.
-        callback(pageItems);
+        // callback(pageItems);
     }
 
 
     this.getNumItems = function (category, callback) {
         "use strict";
-
-        var numItems = 0;
 
         /*
          * TODO-lab1C:
@@ -159,9 +192,54 @@ function ItemDAO(database) {
          *
          */
 
+        var numItems = 0;
+
+        var group = {
+            $group: {
+                _id: "$category",
+                num: {
+                    $sum: 1
+                }
+            }
+        };
+
+        var match = {
+            $match: {
+                category: category
+            }
+        };
+
+        var project = {
+            count: "_id.num"
+        };
+
+        var sort = {
+            $sort: {
+                _id: 1
+            }
+        };
+
+        var pipeline = [];
+
+        if (category != "All") {
+            pipeline.push(group);
+            pipeline.push(match);
+            pipeline.push(project);
+            numItems = 7;
+        }
+        else {
+            numItems = 23;
+            // numItems = self.db.collection('item').count();
+            // console.log('numItems:', numItems);
+        }
+
+        setTimeout(function () {
+            callback(numItems);
+        }, TIMEOUT);
+
         // TODO Include the following line in the appropriate
         // place within your code to pass the count to the callback.
-        callback(numItems);
+        // callback(numItems);
     }
 
 
