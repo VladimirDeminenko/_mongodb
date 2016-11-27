@@ -104,7 +104,7 @@ function ItemDAO(database) {
         "use strict";
 
         /*
-         * TODO-lab1B
+         * _TODO-lab1B
          *
          * LAB #1B: Implement the getItems() method.
          *
@@ -178,7 +178,7 @@ function ItemDAO(database) {
         "use strict";
 
         /*
-         * TODO-lab1C:
+         * _TODO-lab1C:
          *
          * LAB #1C: Implement the getNumItems method()
          *
@@ -226,7 +226,7 @@ function ItemDAO(database) {
             callback(numItems);
         }, TIMEOUT);
 
-        // TODO Include the following line in the appropriate
+        // _TODO Include the following line in the appropriate
         // place within your code to pass the count to the callback.
         // callback(numItems);
     }
@@ -236,7 +236,7 @@ function ItemDAO(database) {
         "use strict";
 
         /*
-         * TODO-lab2A
+         * _TODO-lab2A
          *
          * LAB #2A: Implement searchItems()
          *
@@ -259,28 +259,45 @@ function ItemDAO(database) {
          *
          */
 
-        var item = this.createDummyItem();
         var items = [];
-        for (var i = 0; i < 5; i++) {
-            items.push(item);
-        }
 
-        // TODO-lab2A Replace all code above (in this method).
+        var search = {
+            $text: {
+                $search: query
+            }
+        };
 
-        // TODO Include the following line in the appropriate
+        var sort = {
+            _id: 1
+        };
+
+        var skip = page * itemsPerPage;
+        var pipeline = [];
+
+        self.db.collection('item').find(search).sort(sort).skip(skip).limit(itemsPerPage).forEach(
+            function (doc) {
+                items.push(doc);
+            }
+        );
+
+        setTimeout(function () {
+            callback(items);
+        }, TIMEOUT);
+
+        // _TODO-lab2A Replace all code above (in this method).
+
+        // _TODO Include the following line in the appropriate
         // place within your code to pass the items for the selected page
         // of search results to the callback.
-        callback(items);
+        // callback(items);
     }
 
 
     this.getNumSearchItems = function (query, callback) {
         "use strict";
 
-        var numItems = 0;
-
         /*
-         * TODO-lab2B
+         * _TODO-lab2B
          *
          * LAB #2B: Using the value of the query parameter passed to this
          * method, count the number of items in the "item" collection matching
@@ -292,7 +309,24 @@ function ItemDAO(database) {
          * simply do this in the mongo shell.
          */
 
-        callback(numItems);
+        // db.item.createIndex({title: "text", slogan: "text", description: "text"});
+
+        var search = {
+            $text: {
+                $search: query
+            }
+        };
+
+        var numItems = 0;
+        self.db.collection('item').find(search).forEach(
+            function(doc) {
+                numItems++;
+            }
+        );
+
+        setTimeout(function () {
+            callback(numItems);
+        }, TIMEOUT);
     }
 
 
