@@ -192,6 +192,7 @@ function ItemDAO(database) {
          *
          */
 
+        var allItems = 0;
         var numItems = 0;
 
         var group = {
@@ -203,37 +204,25 @@ function ItemDAO(database) {
             }
         };
 
-        var match = {
-            $match: {
-                category: category
+        var pipeline = [group];
+
+        self.db.collection('item').aggregate(pipeline).forEach(
+            function (doc) {
+                if (doc._id === category) {
+                    numItems = doc.num;
+                }
+                else {
+                    allItems += doc.num;
+                }
             }
-        };
+        );
 
-        var project = {
-            count: "_id.num"
-        };
-
-        var sort = {
-            $sort: {
-                _id: 1
-            }
-        };
-
-        var pipeline = [];
-
-        if (category != "All") {
-            pipeline.push(group);
-            pipeline.push(match);
-            pipeline.push(project);
-            numItems = 7;
-        }
-        else {
-            numItems = 23;
-            // numItems = self.db.collection('item').count();
-            // console.log('numItems:', numItems);
-        }
 
         setTimeout(function () {
+            if (category === "All") {
+                numItems = allItems;
+            }
+
             callback(numItems);
         }, TIMEOUT);
 
@@ -398,3 +387,4 @@ function ItemDAO(database) {
 
 
 module.exports.ItemDAO = ItemDAO;
+
