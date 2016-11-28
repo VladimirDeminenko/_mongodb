@@ -75,17 +75,23 @@ function ItemDAO(database) {
         };
 
         var pipeline = [group, sort];
-
         categories.push(category);
 
-        self.db.collection('item').aggregate(pipeline).forEach(
-            function (doc) {
-                categories.push(doc);
-                category.num += doc.num;
+        self.db.collection('item').aggregate(pipeline).toArray(
+            function (err, doc) {
+                assert.equal(err, null);
+                categories = categories.concat(doc);
             }
         );
 
         setTimeout(function () {
+            categories.forEach(
+                function (doc) {
+                    category.num += doc.num;
+                }
+            );
+            console.log('categories:', categories);
+
             callback(categories);
         }, TIMEOUT);
 
@@ -320,7 +326,7 @@ function ItemDAO(database) {
 
         var numItems = 0;
         self.db.collection('item').find(search).forEach(
-            function(doc) {
+            function (doc) {
                 numItems++;
             }
         );
