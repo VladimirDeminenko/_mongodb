@@ -130,7 +130,7 @@ function ItemDAO(database) {
          *
          */
 
-        var match = {
+        var query = {
             $match: {
                 category: category
             }
@@ -155,7 +155,7 @@ function ItemDAO(database) {
         var pipeline = [];
 
         if (category != "All") {
-            pipeline.push(match);
+            pipeline.push(query);
         }
 
         pipeline.push(sort, skip, limit);
@@ -351,13 +351,13 @@ function ItemDAO(database) {
          *
          */
 
-        var search = {
+        var query = {
             _id: itemId
         };
 
         var item = {};
 
-        self.db.collection('item').find(search).toArray(
+        self.db.collection('item').find(query).toArray(
             function (err, doc) {
                 assert.equal(err, null);
 
@@ -396,7 +396,7 @@ function ItemDAO(database) {
         "use strict";
 
         /*
-         * TODO-lab4
+         * _TODO-lab4
          *
          * LAB #4: Implement addReview().
          *
@@ -424,13 +424,13 @@ function ItemDAO(database) {
             date: Date.now()
         }
 
-        var search = {
+        var query = {
             _id: itemId
         };
 
         var doc = {};
 
-        self.db.collection('item').find(search).toArray(
+        self.db.collection('item').find(query).toArray(
             function (err, items) {
                 assert.equal(err, null);
 
@@ -449,7 +449,7 @@ function ItemDAO(database) {
                         }
                     };
 
-                    self.db.collection('item').update(search, update);
+                    self.db.collection('item').update(query, update);
                 }
             }
         );
