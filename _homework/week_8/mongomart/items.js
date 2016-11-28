@@ -407,6 +407,16 @@ function ItemDAO(database) {
          *
          */
 
+        // _TODO replace the following two lines with your code that will
+        // update the document with a new review.
+        // var doc = this.createDummyItem();
+        // doc.reviews = [reviewDoc];
+
+        // _TODO Include the following line in the appropriate
+        // place within your code to pass the updated doc to the
+        // callback.
+        // callback(doc);
+
         var reviewDoc = {
             name: name,
             comment: comment,
@@ -414,15 +424,39 @@ function ItemDAO(database) {
             date: Date.now()
         }
 
-        // TODO replace the following two lines with your code that will
-        // update the document with a new review.
-        var doc = this.createDummyItem();
-        doc.reviews = [reviewDoc];
+        var search = {
+            _id: itemId
+        };
 
-        // TODO Include the following line in the appropriate
-        // place within your code to pass the updated doc to the
-        // callback.
-        callback(doc);
+        var doc = {};
+
+        self.db.collection('item').find(search).toArray(
+            function (err, items) {
+                assert.equal(err, null);
+
+                if (items[0]) {
+                    doc = items[0];
+
+                    if (!doc.reviews) {
+                        doc.reviews = [];
+                    }
+
+                    doc.reviews.push(reviewDoc);
+
+                    var update = {
+                        $set: {
+                            reviews: doc.reviews
+                        }
+                    };
+
+                    self.db.collection('item').update(search, update);
+                }
+            }
+        );
+
+        setTimeout(function () {
+            callback(doc);
+        }, TIMEOUT);
     }
 
 
