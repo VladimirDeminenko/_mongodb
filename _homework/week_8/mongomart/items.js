@@ -428,34 +428,16 @@ function ItemDAO(database) {
             _id: itemId
         };
 
-        var doc = {};
-
-        self.db.collection('item').find(query).toArray(
-            function (err, items) {
-                assert.equal(err, null);
-
-                if (items[0]) {
-                    doc = items[0];
-
-                    if (!doc.reviews) {
-                        doc.reviews = [];
-                    }
-
-                    doc.reviews.push(reviewDoc);
-
-                    var update = {
-                        $set: {
-                            reviews: doc.reviews
-                        }
-                    };
-
-                    self.db.collection('item').update(query, update);
-                }
+        var options = {
+            $push: {
+                reviews: reviewDoc
             }
-        );
+        };
+
+        self.db.collection('item').update(query, options);
 
         setTimeout(function () {
-            callback(doc);
+            callback(null);
         }, TIMEOUT);
     }
 
