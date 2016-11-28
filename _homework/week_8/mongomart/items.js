@@ -14,6 +14,11 @@
  limitations under the License.
  */
 
+
+// mongoimport --drop -d mongomart -c item data/items.json
+// mongoimport --drop -d mongomart -c cart data/cart.json
+// db.item.createIndex({title: "text", slogan: "text", description: "text"})
+
 const TIMEOUT = 2;
 var MongoClient = require('mongodb').MongoClient,
     assert = require('assert');
@@ -315,8 +320,6 @@ function ItemDAO(database) {
          * simply do this in the mongo shell.
          */
 
-        // db.item.createIndex({title: "text", slogan: "text", description: "text"});
-
         var search = {
             $text: {
                 $search: query
@@ -437,10 +440,9 @@ function ItemDAO(database) {
         self.db.collection('item').update(query, options);
 
         setTimeout(function () {
-            callback(null);
+            self.getItem(itemId, callback);
         }, TIMEOUT);
     }
-
 
     this.createDummyItem = function () {
         "use strict";
