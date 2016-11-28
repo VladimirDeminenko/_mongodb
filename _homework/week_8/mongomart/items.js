@@ -155,9 +155,10 @@ function ItemDAO(database) {
 
         pipeline.push(sort, skip, limit);
 
-        self.db.collection('item').aggregate(pipeline).forEach(
-            function (doc) {
-                pageItems.push(doc);
+        self.db.collection('item').aggregate(pipeline).toArray(
+            function (err, doc) {
+                assert.equal(err, null);
+                pageItems = doc;
             }
         );
 
