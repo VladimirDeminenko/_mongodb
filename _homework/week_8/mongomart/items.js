@@ -90,7 +90,6 @@ function ItemDAO(database) {
                     category.num += doc.num;
                 }
             );
-            console.log('categories:', categories);
 
             callback(categories);
         }, TIMEOUT);
@@ -266,8 +265,6 @@ function ItemDAO(database) {
          *
          */
 
-        var items = [];
-
         var search = {
             $text: {
                 $search: query
@@ -279,11 +276,13 @@ function ItemDAO(database) {
         };
 
         var skip = page * itemsPerPage;
-        var pipeline = [];
+        var items = [];
 
-        self.db.collection('item').find(search).sort(sort).skip(skip).limit(itemsPerPage).forEach(
-            function (doc) {
-                items.push(doc);
+        self.db.collection('item').find(search).sort(sort).skip(skip).limit(itemsPerPage).toArray(
+            function (err, doc) {
+                assert.equal(err, null);
+
+                items = doc;
             }
         );
 
@@ -325,9 +324,11 @@ function ItemDAO(database) {
         };
 
         var numItems = 0;
-        self.db.collection('item').find(search).forEach(
-            function (doc) {
-                numItems++;
+        self.db.collection('item').find(search).toArray(
+            function (err, doc) {
+                assert.equal(err, null);
+
+                numItems = doc.length;
             }
         );
 
