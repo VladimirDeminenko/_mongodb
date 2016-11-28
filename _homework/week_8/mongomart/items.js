@@ -342,7 +342,7 @@ function ItemDAO(database) {
         "use strict";
 
         /*
-         * TODO-lab3
+         * _TODO-lab3
          *
          * LAB #3: Implement the getItem() method.
          *
@@ -351,14 +351,32 @@ function ItemDAO(database) {
          *
          */
 
-        var item = this.createDummyItem();
+        var search = {
+            _id: itemId
+        };
 
-        // TODO-lab3 Replace all code above (in this method).
+        var item = {};
 
-        // TODO Include the following line in the appropriate
+        self.db.collection('item').find(search).toArray(
+            function (err, doc) {
+                assert.equal(err, null);
+
+                if (doc[0]) {
+                    item = doc[0];
+                }
+            }
+        );
+
+        setTimeout(function () {
+            callback(item);
+        }, TIMEOUT);
+
+        // _TODO-lab3 Replace all code above (in this method).
+
+        // _TODO Include the following line in the appropriate
         // place within your code to pass the matching item
         // to the callback.
-        callback(item);
+        // callback(item);
     }
 
 
