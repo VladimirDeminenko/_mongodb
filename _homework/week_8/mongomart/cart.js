@@ -48,7 +48,7 @@ function CartDAO(database) {
         var userCart = {
             userId: userId,
             items: []
-        }
+        };
 
         var pipeline = [query];
 
@@ -56,8 +56,10 @@ function CartDAO(database) {
             function (err, doc) {
                 assert.equal(err, null);
 
-                if (doc[0]) {
+                try {
                     userCart.items = doc[0].items;
+                } catch(e) {
+                    console.info('*** the cart is empty');
                 }
             }
         );
@@ -73,7 +75,7 @@ function CartDAO(database) {
         // place within your code to pass the userCart to the
         // callback.
         // callback(userCart);
-    }
+    };
 
 
     this.itemInCart = function (userId, itemId, callback) {
@@ -81,7 +83,7 @@ function CartDAO(database) {
 
         /*
          *
-         * TODO-lab6
+         * _TODO-lab6
          *
          * LAB: #6
          *
@@ -104,10 +106,34 @@ function CartDAO(database) {
          *
          */
 
-        callback(null);
+        var query = {
+            items: {
+                $elemMatch: {
+                    _id: itemId
+                }
+            }
+        };
 
-        // TODO-lab6 Replace all code above (in this method).
-    }
+        var condition = {
+            "items.$": 1
+        };
+
+        self.db.collection('cart').find(query, condition).toArray(
+            function (err, doc) {
+                var item = null;
+
+                try {
+                    item = doc[0].items[0];
+                } catch (e) {
+                    console.info('*** item isn\'t found in the cart');
+                }
+
+                callback(item);
+            }
+        );
+
+        // _TODO-lab6 Replace all code above (in this method).
+    };
 
 
     /*
@@ -199,7 +225,8 @@ function CartDAO(database) {
         var userCart = {
             userId: userId,
             items: []
-        }
+        };
+
         var dummyItem = this.createDummyItem();
         dummyItem.quantity = quantity;
         userCart.items.push(dummyItem);
@@ -207,7 +234,7 @@ function CartDAO(database) {
 
         // TODO-lab7 Replace all code above (in this method).
 
-    }
+    };
 
     this.createDummyItem = function () {
         "use strict";
