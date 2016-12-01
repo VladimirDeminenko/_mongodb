@@ -107,31 +107,33 @@ function CartDAO(database) {
          */
 
         const QUERY = {
-            items: {
-                $elemMatch: {
-                    _id: itemId
-                }
-            }
+            userId: userId,
+            "items._id": itemId
         };
 
         const PROJECTION = {
             "items.$": 1
         };
 
-        self.db.collection('cart').find(QUERY, PROJECTION).toArray(
-            function (err, doc) {
-                assert.equal(err, null);
-                var item = null;
+        self.db.collection('cart')
+            .find(QUERY, PROJECTION)
+            .limit(1)
+            .next(
+                function (err, doc) {
+                    assert.equal(err, null);
 
-                try {
-                    item = doc[0].items[0];
-                } catch (e) {
-                    // console.info('*** item isn\'t found in the cart');
+                    var item = null;
+
+                    try {
+                        item = doc.items[0];
+                    } catch (e) {
+                        // console.info('*** item isn\'t found in the cart');
+                    }
+
+                    // console.info('*** item:', item);
+                    callback(item);
                 }
-
-                callback(item);
-            }
-        );
+            );
 
         // _TODO-lab6 Replace all code above (in this method).
     };
@@ -225,6 +227,10 @@ function CartDAO(database) {
          *
          */
 
+        const MAX_QUANTITY = 25;
+
+        quantity = Math.min(quantity, MAX_QUANTITY);
+
         const FILTER = {
             userId: userId,
             "items._id": itemId
@@ -238,12 +244,6 @@ function CartDAO(database) {
             }
         };
 
-        const MAX_QUANTITY = 25;
-
-        if (quantity > MAX_QUANTITY) {
-            quantity = MAX_QUANTITY;
-        }
-
         const UPDATE = {
             $set: {
                 "items.$.quantity": quantity
@@ -254,25 +254,22 @@ function CartDAO(database) {
             returnOriginal: false
         };
 
-        if (quantity === 0) {
-            self.db.collection("cart").findOneAndUpdate(FILTER, DELETE, OPTIONS,
-                function (err, result) {
-                    assert.equal(null, err);
-                    callback(result.value);
-                }
-            );
+        var updateDoc = {};
+
+        if (quantity == 0) {
+            updateDoc = DELETE;
+        } else {
+            updateDoc = UPDATE;
         }
-        else {
-            self.db.collection("cart").findOneAndUpdate(FILTER, UPDATE, OPTIONS,
-                function (err, result) {
-                    assert.equal(null, err);
-                    callback(result.value);
-                }
-            );
-        }
+
+        self.db.collection("cart").findOneAndUpdate(FILTER, updateDoc, OPTIONS,
+            function (err, result) {
+                assert.equal(null, err);
+                callback(result.value);
+            }
+        );
 
         // _TODO-lab7 Replace all code above (in this method).
-
     };
 
     this.createDummyItem = function () {
