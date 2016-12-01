@@ -59,12 +59,12 @@ function ItemDAO(database) {
          */
         var categories = [];
 
-        var category = {
+        const CATEGORY = {
             _id: "All",
             num: 0
         };
 
-        var group = {
+        const GROUP = {
             $group: {
                 _id: "$category",
                 num: {
@@ -73,16 +73,16 @@ function ItemDAO(database) {
             }
         };
 
-        var sort = {
+        const SORT = {
             $sort: {
                 _id: 1
             }
         };
 
-        var pipeline = [group, sort];
-        categories.push(category);
+        const PIPELINE = [GROUP, SORT];
+        categories.push(CATEGORY);
 
-        self.db.collection('item').aggregate(pipeline).toArray(
+        self.db.collection('item').aggregate(PIPELINE).toArray(
             function (err, doc) {
                 assert.equal(err, null);
                 categories = categories.concat(doc);
@@ -92,7 +92,7 @@ function ItemDAO(database) {
         setTimeout(function () {
             categories.forEach(
                 function (doc) {
-                    category.num += doc.num;
+                    CATEGORY.num += doc.num;
                 }
             );
 
@@ -107,7 +107,7 @@ function ItemDAO(database) {
         // callback.
 
         // callback(categories);
-    }
+    };
 
 
     this.getItems = function (category, page, itemsPerPage, callback) {
@@ -135,37 +135,37 @@ function ItemDAO(database) {
          *
          */
 
-        var query = {
+        const QUERY = {
             $match: {
                 category: category
             }
         };
 
-        var sort = {
+        const SORT = {
             $sort: {
                 _id: 1
             }
         };
 
-        var skip = {
+        const SKIP = {
             $skip: page * itemsPerPage
         };
 
-        var limit = {
+        const LIMIT = {
             $limit: itemsPerPage
         };
 
+        const PIPELINE = [];
 
         var pageItems = [];
-        var pipeline = [];
 
         if (category != "All") {
-            pipeline.push(query);
+            PIPELINE.push(QUERY);
         }
 
-        pipeline.push(sort, skip, limit);
+        PIPELINE.push(SORT, SKIP, LIMIT);
 
-        self.db.collection('item').aggregate(pipeline).toArray(
+        self.db.collection('item').aggregate(PIPELINE).toArray(
             function (err, doc) {
                 assert.equal(err, null);
                 pageItems = doc;
@@ -182,7 +182,7 @@ function ItemDAO(database) {
         // place within your code to pass the items for the selected page
         // to the callback.
         // callback(pageItems);
-    }
+    };
 
 
     this.getNumItems = function (category, callback) {
@@ -203,10 +203,7 @@ function ItemDAO(database) {
          *
          */
 
-        var allItems = 0;
-        var numItems = 0;
-
-        var group = {
+        const GROUP = {
             $group: {
                 _id: "$category",
                 num: {
@@ -215,16 +212,26 @@ function ItemDAO(database) {
             }
         };
 
-        var pipeline = [group];
+        const PIPELINE = [GROUP];
 
-        self.db.collection('item').aggregate(pipeline).forEach(
+        var allItems = 0;
+        var numItems = 0;
+
+        self.db.collection('item').aggregate(PIPELINE).forEach(
             function (doc) {
                 if (doc._id === category) {
-                    numItems = doc.num;
+                    const BREAK_EXCEPTION = {};
+
+                    try {
+                        numItems = doc.num;
+
+                        throw BREAK_EXCEPTION;
+                    } catch(e) {
+                        // e === BREAK_EXCEPTION
+                    }
                 }
-                else {
-                    allItems += doc.num;
-                }
+
+                allItems += doc.num;
             }
         );
 
@@ -240,7 +247,7 @@ function ItemDAO(database) {
         // _TODO Include the following line in the appropriate
         // place within your code to pass the count to the callback.
         // callback(numItems);
-    }
+    };
 
 
     this.searchItems = function (query, page, itemsPerPage, callback) {
@@ -270,20 +277,21 @@ function ItemDAO(database) {
          *
          */
 
-        var search = {
+        const QUERY = {
             $text: {
                 $search: query
             }
         };
 
-        var sort = {
+        const SORT = {
             _id: 1
         };
 
-        var skip = page * itemsPerPage;
+        const SKIP = page * itemsPerPage;
+
         var items = [];
 
-        self.db.collection('item').find(search).sort(sort).skip(skip).limit(itemsPerPage).toArray(
+        self.db.collection('item').find(QUERY).sort(SORT).skip(SKIP).limit(itemsPerPage).toArray(
             function (err, doc) {
                 assert.equal(err, null);
 
@@ -301,7 +309,7 @@ function ItemDAO(database) {
         // place within your code to pass the items for the selected page
         // of search results to the callback.
         // callback(items);
-    }
+    };
 
 
     this.getNumSearchItems = function (query, callback) {
@@ -320,17 +328,17 @@ function ItemDAO(database) {
          * simply do this in the mongo shell.
          */
 
-        var search = {
+        const QUERY = {
             $text: {
                 $search: query
             }
         };
 
         var numItems = 0;
-        self.db.collection('item').find(search).toArray(
+
+        self.db.collection('item').find(QUERY).toArray(
             function (err, doc) {
                 assert.equal(err, null);
-
                 numItems = doc.length;
             }
         );
@@ -338,7 +346,7 @@ function ItemDAO(database) {
         setTimeout(function () {
             callback(numItems);
         }, TIMEOUT);
-    }
+    };
 
 
     this.getItem = function (itemId, callback) {
@@ -354,18 +362,20 @@ function ItemDAO(database) {
          *
          */
 
-        var query = {
+        const QUERY = {
             _id: itemId
         };
 
         var item = {};
 
-        self.db.collection('item').find(query).toArray(
+        self.db.collection('item').find(QUERY).toArray(
             function (err, doc) {
                 assert.equal(err, null);
 
-                if (doc[0]) {
+                try {
                     item = doc[0];
+                } catch(e) {
+                    // console.info('*** item is not found');
                 }
             }
         );
@@ -380,7 +390,7 @@ function ItemDAO(database) {
         // place within your code to pass the matching item
         // to the callback.
         // callback(item);
-    }
+    };
 
 
     this.getRelatedItems = function (callback) {
@@ -425,29 +435,29 @@ function ItemDAO(database) {
             comment: comment,
             stars: stars,
             date: Date.now()
-        }
+        };
 
-        var query = {
+        const QUERY = {
             _id: itemId
         };
 
-        var options = {
+        const UPDATE = {
             $push: {
                 reviews: reviewDoc
             }
         };
 
-        self.db.collection('item').update(query, options);
+        self.db.collection('item').update(QUERY, UPDATE);
 
         setTimeout(function () {
             self.getItem(itemId, callback);
         }, TIMEOUT);
-    }
+    };
 
     this.createDummyItem = function () {
         "use strict";
 
-        var item = {
+        return {
             _id: 1,
             title: "Gray Hooded Sweatshirt",
             description: "The top hooded sweatshirt we offer",
@@ -458,11 +468,7 @@ function ItemDAO(database) {
             price: 29.99,
             reviews: []
         };
-
-        return item;
     }
 }
 
-
 module.exports.ItemDAO = ItemDAO;
-
